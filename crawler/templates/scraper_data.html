@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraper | Scrape</title>
+</head>
+<body>
+    <div class="wrap">
+        <input type="file" id="csvFileInput">
+        <button class="button" onclick="sendPostRequest()"><b>Scrape</b></button>
+        <button class="button" id="cancelButton" onclick="cancelScraping()" style="display: none;"><b>Cancel</b></button> <!-- Add the Cancel button with "display: none" -->
+        <a href="http://localhost:8000/crawler/dashboard"><button class="button right-button"><b>Dashboard</b></button></a>
+    </div>
+
+    <table id="csvTable" style="display: none;">
+        <thead>
+            <tr></tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <style>
+        html, body {
+            height: 100%;
+        }
+    
+        .wrap {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        .button {
+            width: 200px;
+            height: 100px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            font-weight: 500;
+            color: #000;
+            background-color: #fff;
+            border: none;
+            border-radius: 45px;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease 0s;
+            cursor: pointer;
+            outline: none;
+        }
+    
+        .button:hover {
+            background-color: #2EE59D;
+            box-shadow: 0px 15px 20px rgba(46, 229, 157, 0.4);
+            color: #fff;
+            transform: translateY(-7px);
+        }
+    
+        .right-button {
+            margin-left: 10px;
+            width: 120px;
+            height: 68px;
+            font-size: 12px;
+        }
+
+        /* Loader styles */
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            border-top-color: #2EE59D;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+    </style>
+
+<script>
+    let abortController;
+
+    function sendPostRequest() {
+        if (abortController) {
+            alert('There is already a scraping process in progress.');
+            return;
+        }
+
+        const button = document.querySelector('.button');
+        const cancelButton = document.getElementById('cancelButton');
+        button.disabled = true;
+        button.innerHTML = '<span class="loader"></span> Scraping...';
+        cancelButton.style.display = 'inline-block'; // Display the Cancel button
+
+        const fileInput = document.getElementById('csvFileInput');
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        formData.append('csv_file', file);
+
+        abortController = new AbortController();
+        const signal = abortController.signal;
+
+        fetch('http://localhost:8000/v1/scraper/csv', {
+            method: 'POST',
+            body: formData,
+            signal,
+        })
+        .then(response => {
+            abortController = null;
+            cancelButton.style.display = 'none'; // Hide the Cancel button
+            button.disabled = false;
+            button.innerHTML = 'Scrape';
+
+            if (response.status === 202) {
+                alert('The process is still pending. Please wait for completion.');
+            } else if (response.ok) {
+                console.log('POST request sent successfully.');
+                alert('Process completed successfully!');
+            } else {
+                console.error('Error sending POST request.');
+                alert('An error occurred during the process.');
+            }
+        })
+        .catch(error => {
+            abortController = null;
+            cancelButton.style.display = 'none'; // Hide the Cancel button
+            console.error('Error scraping:', error);
+            button.disabled = false;
+            button.innerHTML = 'Scrape';
+            alert('An error occurred during the process.');
+        });
+    }
+
+    function cancelScraping() {
+        if (abortController) {
+            abortController.abort();
+            abortController = null;
+            const button = document.querySelector('.button');
+            const cancelButton = document.getElementById('cancelButton');
+            cancelButton.style.display = 'none'; // Hide the Cancel button
+            button.disabled = false;
+            button.innerHTML = 'Scrape';
+            alert('Scraping process has been cancelled.');
+        } else {
+            alert('There is no ongoing scraping process to cancel.');
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spreadsheet data</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    input[type="text"] {
+      border: 1px solid #ccc;
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 4px;
+    }
+
+    .add-row-btn, .submit-btn, .delete-row-btn {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .add-row-btn:hover, .submit-btn:hover, .delete-row-btn:hover {
+      background-color: #45a049;
+    }
+
+    .add-row-btn {
+      background-color: #2196F3;
+    }
+
+    .add-row-btn:hover {
+      background-color: #0b7dda;
+    }
+
+    .delete-row-btn {
+      background-color: #f44336;
+    }
+
+    .delete-row-btn:hover {
+      background-color: #da0b0b;
+    }
+  </style>
+  {% csrf_token %}
+</head>
+<body>
+  <div class="container">
+    <div class="table-container">
+      <table>
+        <tr>
+          <th>Keyword</th>
+          <th>Buzzwords</th>
+          <th>Location</th>
+          <th></th>
+        </tr>
+        {% for row in data %}
+        <tr>
+          <td><input type="text" name="keyword[]" value="{{ row.keyword }}" /></td>
+          <td><input type="text" name="buzzwords[]" value="{{ row.buzzwords }}" /></td>
+          <td><input type="text" name="location[]" value="{{ row.location }}" /></td>
+          <td><button class="delete-row-btn" onclick="deleteRow(this)">Delete</button></td>
+        </tr>
+        {% endfor %}
+
+      </table>
+    </div>
+    <button class="add-row-btn" onclick="addRow()">Add Row</button>
+    <button class="submit-btn" onclick="submitData()">Submit</button>
+  </div>
+
+  <script>
+    function addRow() {
+      const table = document.querySelector("table");
+      const newRow = document.createElement("tr");
+
+      // Create input fields for each column
+      const inputFields = [
+        { name: "keyword", placeholder: "Enter keyword" },
+        { name: "buzzwords", placeholder: "Enter buzzwords" },
+        { name: "location", placeholder: "Enter location" },
+      ];
+
+      inputFields.forEach((field) => {
+        const newCell = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.name = `${field.name}[]`;
+        input.placeholder = field.placeholder;
+        newCell.appendChild(input);
+        newRow.appendChild(newCell);
+      });
+
+      // Create delete button cell
+      const deleteCell = document.createElement("td");
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Delete";
+      deleteBtn.className = "delete-row-btn";
+      deleteBtn.onclick = function() {
+        deleteRow(this);
+      };
+      deleteCell.appendChild(deleteBtn);
+      newRow.appendChild(deleteCell);
+
+      table.appendChild(newRow);
+    }
+
+    function deleteRow(button) {
+      const rowToDelete = button.parentNode.parentNode;
+      rowToDelete.parentNode.removeChild(rowToDelete);
+    }
+
+    function submitData() {
+      const tableRows = document.querySelectorAll("table tr:not(:first-child)");
+      const data = [];
+
+      tableRows.forEach((row) => {
+        const rowData = [];
+        const inputs = row.querySelectorAll("input");
+
+        inputs.forEach((input) => {
+          rowData.push(input.value);
+        });
+
+        data.push(rowData);
+      });
+
+      fetch("", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("Error saving data:", error);
+        });
+    }
+  </script>
+</body>
+</html>

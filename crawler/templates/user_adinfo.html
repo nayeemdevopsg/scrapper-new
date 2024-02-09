@@ -1,0 +1,454 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Scraper | Ad info</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- overlayScrollbars -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+</head>
+<body class="hold-transition sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <!-- <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="dashboard" class="nav-link">Dashboard</a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="ads" class="nav-link">Ads</a>
+      </li>
+    </ul> -->
+
+
+    <!-- Right navbar links -->
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+          <i class="fas fa-th-large"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="dashboard" class="brand-link">
+      <img src="{% static 'dist/img/AdminLTELogo.png' %}"
+           alt="AdminLTE Logo"
+           class="brand-image img-circle elevation-3"
+           style="opacity: .8">
+      <span class="brand-text font-weight-light"> Ads</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <!-- Add icons to the links using the .nav-icon class
+               with font-awesome or any other icon font library -->
+               <li class="nav-header">MAIN NAVIGATION</li>
+          <li class="nav-item has-treeview">
+            <a href="dashboard" class="nav-link">
+              <i class="nav-icon fas fa-tachometer-alt"></i>
+              <p>
+                Dashboard
+              </p>
+            </a>          
+          </li>
+          <li class="nav-header">ADS</li>
+          <li class="nav-item">
+            <a href="ads" class="nav-link">
+              <i class="nav-icon fas fa-copy"></i>
+              <p>
+                Ads
+                <!-- <span class="badge badge-info right">2</span> -->
+              </p>
+            </a>
+          
+          <!-- <li class="nav-header">UTILITIES</li>
+          <li class="nav-item">
+            <a href="calender" class="nav-link">
+              <i class="nav-icon far fa-calendar-alt"></i>
+              <p>
+                Calendar
+                <span class="badge badge-info right">2</span>
+              </p>
+            </a>
+          </li> -->
+          
+          
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Ad-info</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Ad-info</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+  <!-- Main content -->
+<section class="content">
+
+  <!-- Default box -->
+  <div class="card card-solid">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-12 col-sm-5">
+          <h3 class="d-inline-block d-sm-none">Ad title</h3>
+          <div class="col-12">
+            <!-- Use the ad_info data to populate the ad image -->
+            <img src="{{ ad_info.screenshot }}" class="product-image" alt="ad image">
+            
+          </div>
+          
+        </div>
+        <div class="col-12 col-sm-7">
+          <!-- <div class="bg-gray py-1 px-3 mt-0">
+            <h2 class="mb-0">
+              {{ ad_info.query }}
+            </h2>
+          </div> -->
+          <form id="adForm">
+            {% csrf_token %}
+            <h3 class="my-12"><input type="text" id="adTitle" name="adTitle" value="{{ ad_info.ad_title }}" style="width:100%"></h3>
+            <p><textarea id="adDescription" name="adDescription" rows="3" style="width:100%">{{ ad_info.ad_description }}</textarea></p>
+            <h4 class="mt-1"> 
+              URL: <a href="{{ ad_info.ad_url }}"target="_blank"><small>{{ ad_info.ad_url }}</small></a>
+            </h4>
+
+            <hr>
+            <h4>Disposition</h4>
+            <div class="btn-group btn-group-toggle disposition-buttons" data-toggle="buttons">
+              <label class="btn btn-default text-center">
+                <input type="radio" name="disposition" id="disposition1" autocomplete="off">
+                Appointment Booked
+                <br>
+                <i class="fas fa-circle fa-2x text-green"></i>
+              </label>
+              <label class="btn btn-default text-center">
+                <input type="radio" name="disposition" id="disposition2" autocomplete="off">
+                Not Interested
+                <br>
+                <i class="fas fa-circle fa-2x text-orange"></i>
+              </label>
+              <label class="btn btn-default text-center">
+                <input type="radio" name="disposition" id="disposition3" autocomplete="off">
+                No Answer
+                <br>
+                <i class="fas fa-circle fa-2x text-yellow"></i>
+              </label>
+              <label class="btn btn-default text-center">
+                <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Call Back Client&details=Contact Client Date&dates=20240605T103000/20240605T184500&location=Australia", target="_blank" style="color: black;">
+                <input type="radio" name="disposition" id="disposition3" autocomplete="off">
+                Call_Back
+                <br>
+                <i class="fas fa-circle fa-2x text-purple"></i>
+              </a>
+              </label>
+            </div>
+            
+
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                {% csrf_token %}
+                <label for="contactPerson">Contact Person:</label>
+                <input type="text" id="contactPerson" name="contactPerson" value="{{ ad_info.company_board_members }}" class="form-control">
+              </div>
+            
+              <div class="form-group col-md-6">
+                {% csrf_token %}
+                <label for="personRole">Person Role:</label>
+                <input type="text" id="personRole" name="personRole" value="{{ ad_info.company_board_member_role }}" class="form-control">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                {% csrf_token %}
+                <label for="contactNumber">Contact Number:</label>
+                <input type="text" id="contactNumber" name="contactNumber" value="{{ ad_info.company_contact_number }}" class="form-control">
+              </div>
+            
+              <div class="form-group col-md-6">
+                {% csrf_token %}
+                <label for="contactEmail">Contact Email:</label>
+                <input type="text" id="contactEmail" name="contactEmail" value="{{ ad_info.company_email }}" class="form-control">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                {% csrf_token %}
+                <label for="whois">Whois:</label>
+                <input type="text" id="whoIs" name="whoIs" value="{{ ad_info.whois }}" class="form-control">
+              </div>
+            
+              <div class="form-group col-md-6">
+                {% csrf_token %}
+                <label for="secondaryPhoneNumber">Secondary Contact Number:</label>
+                <input type="text" id="secondaryPhoneNumber" name="secondaryPhoneNumber" value="{{ ad_info.secondary_contact }}" class="form-control">
+              </div>
+            </div>
+            
+            
+            
+
+            
+            <input type="hidden" id="adId" name="adId" value="{{ ad_info.id }}">
+            <button type="button" onclick="saveChanges()" class="btn btn-primary mt-4">Save Changes</button>
+            <div class="mt-4">
+              <div class="btn btn-default btn-lg btn-flat" id="previousAdButton">
+                <i class="fas fa-angle-left fa-lg mr-6"></i> 
+                Previous ad
+              </div>
+              <div class="btn btn-primary btn-lg btn-flat" id="nextAdButton">
+                Next ad
+                <i class="fas fa-angle-right fa-lg mr-6"></i>
+              </div>
+            </div>
+
+          </form>
+        
+        </div>
+      </div>
+      <div class="notes-section">
+        <div class="card card-success">
+          <div class="card-header">
+            <h3 class="card-title">Notes</h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="maximize"><i class="fas fa-expand"></i></button>
+              <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          <div class="card-body">
+            <form id="notesForm">
+              {% csrf_token %}
+              <div class="form-group">
+                <!-- <label for="noteInput">Add a note:</label> -->
+                <textarea class="form-control" id="noteInput" rows="5">{{ ad_info.notes }}</textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Save Note</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /.card-body -->
+  </div>
+  <!-- /.card -->
+
+</section>
+<!-- /.content -->
+
+<!-- Add a loading spinner or progress indicator -->
+<div id="loader" style="display: none;">
+  <!-- Replace this with your preferred loading spinner or progress indicator HTML -->
+  Loading...
+</div>
+
+
+
+
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+<style>
+  .disposition-buttons {
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+  .disposition-buttons label.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.disposition-buttons label.active:focus,
+.disposition-buttons label.active:hover {
+  background-color: #007bff;
+  color: #fff;
+  box-shadow: 0 0 10px #007bff, 0 0 20px #007bff, 0 0 30px #007bff;
+  outline: none;
+}
+
+.disposition-buttons label:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+}
+
+.disposition-buttons label:focus {
+  background-color: #f8f9fa;
+}
+.notes-section {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  width: 300px;
+}
+
+@media (max-width: 768px) {
+  .notes-section {
+    position: static;
+    margin-top: 20px;
+    width: 100%;
+  }
+}
+</style>
+<!-- jQuery -->
+<script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="{% static 'dist/js/demo.js' %}"></script>
+<script src="{% static 'adinfo.js' %}"></script>
+
+<script>
+
+var disposition = "{{ ad_info.disposition }}";
+var dispitem = document.querySelectorAll('.disposition-buttons label');
+
+dispitem.forEach(button => {
+  if (button.innerText.trim() === disposition) {
+    button.classList.add('active');
+    button.click(); // Simulate initial click to keep it pressed
+
+    // Add click event listener to toggle active state
+    button.addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent default behavior of the button
+      button.classList.toggle('active'); // Toggle active class on each click
+
+      // Remove active class from other buttons
+      dispitem.forEach(otherButton => {
+        if (otherButton !== button) {
+          otherButton.classList.remove('active');
+        }
+      });
+    });
+  }
+});
+
+
+
+
+  const dispositionButtons = document.querySelectorAll('.disposition-buttons label');
+
+dispositionButtons.forEach(button => {
+  button.addEventListener('click', function() {
+    dispositionButtons.forEach(button => {
+      button.classList.remove('active');
+    });
+    this.classList.add('active');
+  });
+});
+</script>
+<script>
+function saveChanges() {
+  $('#loader').show();
+
+  var url = window.location.href;
+  var adId = url.substring(url.lastIndexOf("/") + 1);
+
+  // Get the CSRF token from the cookie
+  var csrftoken = getCookie('csrftoken');
+
+  // Get the form values
+  var adTitle = $('#adTitle').val();
+  var adDescription = $('#adDescription').val();
+  var adUrl = $('#adUrl').val();
+  var adDisposition = $('.disposition-buttons label.active').text().trim();
+  var contactPerson = $('#contactPerson').val();
+  var personRole = $('#personRole').val();
+  var contactNumber = $('#contactNumber').val();
+  var contactEmail = $('#contactEmail').val();
+  var whoIs = $('#whoIs').val();
+  var secondaryPhoneNumber = $('#secondaryPhoneNumber').val();
+
+  // Get the data
+  var data = {
+    'ad_id': adId,
+    'ad_title': adTitle,
+    'ad_description': adDescription,
+    'ad_url': adUrl,
+    'disposition': adDisposition,
+    'company_board_members': contactPerson,
+    'company_board_member_role': personRole,
+    'company_contact_number': contactNumber,
+    'company_email': contactEmail,
+    'whois': whoIs,
+    'secondary_contact': secondaryPhoneNumber
+  };
+
+  // Make the AJAX request
+  $.ajax({
+    url: 'http://localhost:8000/v1/crawler/update_ad/' + adId,
+    type: 'PUT',
+    data: JSON.stringify(data),
+    contentType: 'application/json',
+    headers: {
+      'X-CSRFToken': csrftoken
+    },
+    success: function(response) {
+      // Handle the success response here
+      console.log('Data saved successfully');
+      $('#loader').hide();
+    },
+    error: function(error) {
+      // Handle the error response here
+      console.error('Error saving data:', error);
+      $('#loader').hide();
+    }
+  });
+}
+</script>
+<!-- Add the jQuery library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</body>
+</html>
