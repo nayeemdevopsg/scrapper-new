@@ -9,7 +9,7 @@ RUN pip install --upgrade pip
 RUN apt-get install zip -y
 RUN apt-get install unzip -y
 
-RUN wget -N https://chromedriver.storage.googleapis.com/117.0.5938.132/chromedriver_linux64.zip -P ~/
+RUN wget -N https://chromedriver.storage.googleapis.com/114.0.5735.16/chromedriver_linux64.zip -P ~/
 RUN unzip ~/chromedriver_linux64.zip -d ~/
 RUN rm ~/chromedriver_linux64.zip
 RUN mv -f ~/chromedriver /usr/local/bin/chromedriver
