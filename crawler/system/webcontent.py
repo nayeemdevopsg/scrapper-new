@@ -12,7 +12,7 @@ def whois_lookup (url):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
-    service = Service("path/to/chromedriver")
+    service = Service("/usr/local/bin/chromedriver")
     scraper = webdriver.Chrome(service=service, options=options)
     scraper.set_window_size(2048, 1080)
     try:
@@ -41,7 +41,7 @@ def facebook_crawler(url):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
-    service = Service("path/to/chromedriver")
+    service = Service("/usr/local/bin/chromedriver")
     scraper = webdriver.Chrome(service=service, options=options)
     scraper.set_window_size(2048, 1080)
     try:
@@ -68,7 +68,7 @@ def url_content_scraper(query):
     option.add_argument("--no-sandbox")
     option.add_argument("--disable-dev-shm-usage")
     option.add_argument("--disable-gpu")
-    service = Service("path/to/chromedriver")
+    service = Service("/usr/local/bin/chromedriver")
     scraper = webdriver.Chrome(service=service, options=option)
     scraper.set_window_size(2048, 1080)
     try:
