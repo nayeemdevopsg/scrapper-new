@@ -4,10 +4,8 @@ from django.http import JsonResponse
 from rest_framework.views import APIView
 from .serializer import Ad_modelSerializer
 from .models import Ad_model, SpreadsheetData
-from crawler.system.adscraper import geotagging
 from crawler.system.webcontent import url_content_scraper
 from crawler.ResponseHelper.response import ResponseHelper
-from icecream import ic
 
 def spreadsheet_modelList(request):
     if request.method == 'POST':
@@ -33,7 +31,6 @@ def spreadsheet_modelList(request):
 
 class Ad_modelList(APIView):
     def post(self, request):
-        print("getting data")
         if 'csv_file' not in request.FILES:
             return ResponseHelper.get_bad_request_response('No file was uploaded')
         
@@ -52,32 +49,10 @@ class Ad_modelList(APIView):
                 for location in locations if locations.any() else [None]:
                     queries.append(f'{keyword} {buzzword} {location}')
         queries = ["ads", "add services"]
-        try:
-            for query in queries:
-                looper = 0
-                while looper < 15:
-                    ads = url_content_scraper(query)
-                    for ad in ads:
-                        title = ad["title"]
-                        url = ad["url"]
-                        description = ad["description"]
-                        screenshot = ad["screenshot"]
-                        company_contact_number = ad["contact_number"]
-                        company_board_members = "Not Found" #ad["company_board_members"]
-                        company_email = ad["company_email"]
-                        company_board_member_role = "Not Found" #ad["company_board_members_role"]
-                        whois = "Not Found" #ad["whois"]
 
-                        existing_ad = Ad_model.objects.filter(ad_url=url) or Ad_model.objects.filter(ad_title=title)
-                        if existing_ad:
-                            continue  
-
-                        ad = Ad_model.objects.create(ad_url=url, ad_title=title, ad_description=description, query=query, screenshot=screenshot, company_contact_number=company_contact_number, company_board_members=company_board_members, company_email=company_email, company_board_member_role=company_board_member_role, whois=whois)
-                        ad.save()
-                    looper += 1
-                    return ResponseHelper.get_success_response (queries,'successfully scraped data')
-        except Exception as e:
-            return ResponseHelper.get_internal_server_error_response(f"Error scraping data: {str(e)}")
+        if url_content_scraper(queries):
+            return ResponseHelper.get_success_response (queries,'successfully scraped data')
+        return ResponseHelper.get_internal_server_error_response("Error scraping data:")
             
     def get(self, request):
         try:
@@ -151,7 +126,6 @@ class single_ad_info(APIView):
             # change ad_new to false
             Ad_model.objects.filter(ad_id=ad_id).update(ad_new=False)
             serializer = Ad_modelSerializer(ad)
-            print(serializer.data)
             return render(request, 'ad_info.html', {"ad_info":serializer.data})
         except Exception as e:
             return ResponseHelper.get_internal_server_error_response(str(e))

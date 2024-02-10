@@ -1,9 +1,12 @@
 import time
+from django.db.models import Q
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from crawler.system.adscraper import scrape_google_ads, save_ads_to_csv
+from crawler.system.adscraper import scrape_google_ads
+from crawler.models import Ad_model
+from crawler.serializer import Ad_modelSerializer
 
 def whois_lookup (url):
     print("started whois lookup crawling...")
@@ -25,13 +28,12 @@ def whois_lookup (url):
             for board in boards:
                 try:
                     board_members.append(board.text)
-                except:
+                except Exception:
                     pass
-            print(board_members)
             return board_members[5]
-        except:
+        except Exception:
             return ""
-    except:
+    except Exception:
         return ""
     
 def facebook_crawler(url):
@@ -56,56 +58,23 @@ def facebook_crawler(url):
         for contact in contact_number:
             try:
                 contact_list.append(contact.text)
-            except:
+            except Exception:
                 contact_list.append("")
         return contact_list
-    except:
+    except Exception:
         return ""
 
-def url_content_scraper(query):
-    # # Set up selenium webdriver
-    # CHROMEDRIVER_PATH = '/home/nobin/Documents/chromedriver/chromedriver'
-    # WINDOW_SIZE = "2048,1080"
-    # chrome_service = Service(CHROMEDRIVER_PATH)
+def url_content_scraper(queries):
+    return_value = []
+    for query in queries:
+        data_list: list = scrape_google_ads(query)
+        for data in data_list:
+            existing_ad = Ad_model.objects.filter(Q(ad_url=data.get('ad_url')) | Q(ad_title=data.get('ad_title')))
+            if not existing_ad:
+                return_value.append(data)
+    serializer = Ad_modelSerializer(data=return_value, many=True)
+    if serializer.is_valid():
+        serializer.save()
+        return len(serializer.data)
+    return 0
 
-    # chrome_options = Options()
-    # chrome_options.add_argument("--headless") 
-    # chrome_options.add_argument("--no-sandbox")
-    # chrome_options.add_argument("--disable-dev-shm-usage")
-    # chrome_options.add_argument("--disable-gpu")
-    # chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
-
-    # scraper = webdriver.Chrome(service=chrome_service, options=chrome_options)
-
-    try:
-        ads = scrape_google_ads(query)
-        if not ads:
-            print("No Ads found")
-            return []
-        for ad in ads:
-            url = ad["url"]
-            try:
-                try:
-                    details = facebook_crawler(url)
-                    ad["contact_number"] = details[1]
-                    email = details[2]
-                    ad["company_email"] = email
-                except:
-                    ad["contact_number"] = ""
-                    ad["company_email"] = ""
-                
-                # try:
-                #     whois = whois_lookup(url)
-                #     ad["whois"] = whois
-                # except:
-                #     ad["whois"] = ""
-
-                # ad["company_board_members_role"] = ""
-                # ad["company_board_members"] = ""
-            except:
-                return []
-        return ads
-        # save_ads_to_csv(ads)    
-        # print("ads saved to csv")
-    except:
-        return []

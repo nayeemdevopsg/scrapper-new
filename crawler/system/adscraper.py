@@ -1,14 +1,17 @@
+import io
 import os
 import csv
 import time
 import numpy as np
 from PIL import Image
+from bs4 import BeautifulSoup
 from selenium import webdriver
+from django.core.files import File
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from icecream import ic
+
 
 def is_empty_image(image):
     """
@@ -20,8 +23,8 @@ def is_empty_image(image):
     threshold = 10
     return intensity_mean < threshold
 
+
 def get_last_screenshot_count(file_paths):
-    # print(file_paths)
     last_screenshot_count = -1
     for file_path in file_paths:
         file_name = os.path.basename(file_path)
@@ -33,6 +36,7 @@ def get_last_screenshot_count(file_paths):
             continue
     return last_screenshot_count
 
+
 def scrape_google_ads(query, max_ads=4):
     """
     function to scrape google ads from google search results.
@@ -40,8 +44,6 @@ def scrape_google_ads(query, max_ads=4):
     Args:
         query (str): query to search for
     """
-
-    indexes = []
 
     os.makedirs(f"media/data/{query}", exist_ok=True)
     if os.path.exists(f"media/data/{query}"):
@@ -56,7 +58,7 @@ def scrape_google_ads(query, max_ads=4):
         os.makedirs(f"media/data/{query}/full", exist_ok=True)
 
     # Set up selenium webdriver
-    CHROMEDRIVER_PATH = '/home/nobin/Documents/chromedriver/chromedriver'
+    CHROMEDRIVER_PATH = '/home/nobinkhan/Downloads/chromedriver/chromedriver'
     WINDOW_SIZE = "2048,1080"
     chrome_service = Service(CHROMEDRIVER_PATH)
 
@@ -69,111 +71,59 @@ def scrape_google_ads(query, max_ads=4):
     scraper = webdriver.Chrome(service=chrome_service, options=chrome_options)
 
     url = f"https://www.google.com/search?q={query}"
-
-    ic(query)
-    ic(url)
-
     scraper.get(url)
     time.sleep(2)
 
-    try:
-        # saving full image screenshot
-        scraper.save_screenshot(f"media/data/{query}/full/full_page.png")
-        initial_ads = scraper.find_elements(By.CSS_SELECTOR, ".uEierd")
-        ic(initial_ads)
+    soup = BeautifulSoup(scraper.page_source, "html.parser")
 
-        # saving individual ads only 4 items
-        for loop_index, web_element in enumerate(initial_ads):
-            ic("First loop")
-            if loop_index >= max_ads:
-                break
-            location = web_element.location
-            size = web_element.size
-            im = Image.open(f"media/data/{query}/full/full_page.png")
-            left = location["x"]
-            top = location["y"]
-            right = location["x"] + size["width"]
-            bottom = location["y"] + size["height"]
+    scrapped_data = []
+    target_divs = soup.find_all('div', class_='uEierd')
+    for div in target_divs:
+        title = div.find('div', class_='QfkTvb', role='heading').find('span').text.strip().replace('\n', '').replace('\t', '')
+        description = div.find('div', class_='Va3FIb r025kc lVm3ye').get_text().strip().replace('\n', ' ').replace('\xa0', ' ').replace('<em class="TNT2l AStapd">Ads</em>', 'Ads ').replace('\t', '').replace('<em class="TNT2l AStapd">Ad</em>', 'Ad ')
+        link = div.find('div', class_='v5yQqb').find('a')['href']
+        scrapped_data.append({
+            'ad_url': link, 
+            'ad_title':title, 
+            'ad_description': description, 
+            'query': query, 
+            'company_contact_number':"Not Found", 
+            'company_board_members':"Not Found", 
+            'company_email':"Not Found", 
+            'company_board_member_role':"Not Found", 
+            'whois':"Not Found"
+        })
 
-            im = im.crop((left, top, right, bottom))
-            
-            #last screenshot
-            last_screenshot_count = get_last_screenshot_count(
-                file_paths=os.listdir(f"media/data/{query}/")
-            )
-            ic(last_screenshot_count)
-            if not is_empty_image(im):
-                ic(im)
-                im.save(f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
-                indexes.append(last_screenshot_count+1)
-            
-            ads = []
-            ic(ads)
-            ic(indexes)
-            while True:
-                ic("second loop")
-                scraper.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
-                time.sleep(3)
-                new_ads = scraper.find_elements(By.CSS_SELECTOR, ".uEierd")
-                ic(new_ads)
-                ic(len(new_ads))
-                if new_ads == ads:
-                    break
-                elif new_ads != ads:
-                    ads = new_ads
-                    for loop_index, web_element in enumerate(ads):
-                        if loop_index >= max_ads:
-                            break
+    # saving full image screenshot
+    scraper.save_screenshot(f"media/data/{query}/full/full_page.png")
+    initial_ads = scraper.find_elements(By.CSS_SELECTOR, ".uEierd")
 
-                        location = web_element.location
-                        size = web_element.size
-                        left = location["x"]
-                        top = location["y"]
-                        right = location["x"] + size["width"]
-                        bottom = location["y"] + size["height"]
+    # saving individual ads image
+    for loop_index, web_element in enumerate(initial_ads):
 
-                        im = im.crop((left, top, right, bottom))
-                        ic("last im")
-                        if not is_empty_image(im):
-                            im.save(f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
-                            indexes.append(last_screenshot_count+1)
-                ic(indexes)
+        location = web_element.location
+        size = web_element.size
+        full_image = Image.open(f"media/data/{query}/full/full_page.png")
+        left = location["x"]
+        top = location["y"]
+        right = location["x"] + size["width"]
+        bottom = location["y"] + size["height"]
 
-        try:
-            descriptions = scraper.find_elements(By.CSS_SELECTOR, ".MUxGbd.yDYNvb.lyLwlc")
-            desc = []
-            for loop_index, description in enumerate(descriptions):
-                if loop_index >= max_ads or loop_index >= len(indexes):
-                    break
-                data = description.find_element(By.CSS_SELECTOR, "div").text.strip()
-                desc.append(data)
+        full_image = full_image.crop((left, top, right, bottom))
 
-        except Exception:
-            return desc.append("No description available")
-        ic(desc)
-        ad_containers = scraper.find_elements(By.CSS_SELECTOR, ".v5yQqb")
-        ads = []
-        for i, ad_container in enumerate(ad_containers):
-            if i >= max_ads or i >= len(indexes):
-                break
-            url = ad_container.find_element(By.CSS_SELECTOR, "a").get_attribute("href")
-            title = ad_container.find_element(By.CSS_SELECTOR, "div div div div div div").text.strip()
-            ad = {
-                # "ad_id": ad_id,
-                "query": query,
-                "title": title,
-                "url": url,
-                "description": desc[i],
-                "screenshot": f"media/data/{query}/{query}_{indexes[i]}.png"
-            }
-            ads.append(ad)
+        #last screenshot
+        last_screenshot_count = get_last_screenshot_count(
+            file_paths=os.listdir(f"media/data/{query}/")
+        )
+        if not is_empty_image(full_image):
+            ic(full_image.info)
+            full_image.save(f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
+            buffer = io.BytesIO()
+            full_image.save(buffer, format='png')  # Maintain original format
+            buffered_file = File(buffer, f"{query}_{last_screenshot_count+1}.png")
+            scrapped_data[loop_index].update(screenshot=buffered_file)
+    return scrapped_data
 
-        ic(ads)
-        return ads
-
-    except Exception:
-        return []
-    
 
 def geotagging(query):
     url = f"https://www.google.com/search?q={query}"
@@ -201,8 +151,9 @@ def geotagging(query):
             q = geo.find_element(By.TAG_NAME, "a").get_attribute("data-query")
             query_list_geo.append(q)
         return query_list_geo
-    except:
+    except Exception:
         return [query]
+
 
 def save_ads_to_csv(ads):
     """
