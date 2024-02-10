@@ -7,7 +7,7 @@ from .models import Ad_model, SpreadsheetData
 from crawler.system.adscraper import geotagging
 from crawler.system.webcontent import url_content_scraper
 from crawler.ResponseHelper.response import ResponseHelper
-import json
+from icecream import ic
 
 def spreadsheet_modelList(request):
     if request.method == 'POST':
@@ -51,11 +51,8 @@ class Ad_modelList(APIView):
             for buzzword in buzzwords if buzzwords.any() else [None]:
                 for location in locations if locations.any() else [None]:
                     queries.append(f'{keyword} {buzzword} {location}')
-        
-        print("queries",queries)
-        
+        queries = ["ads", "add services"]
         try:
-            print("started scraping")
             for query in queries:
                 looper = 0
                 while looper < 15:

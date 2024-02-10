@@ -63,21 +63,27 @@ def facebook_crawler(url):
         return ""
 
 def url_content_scraper(query):
-    option = Options()
-    option.add_argument("--headless")
-    option.add_argument("--no-sandbox")
-    option.add_argument("--disable-dev-shm-usage")
-    option.add_argument("--disable-gpu")
-    service = Service("/usr/local/bin/chromedriver")
-    scraper = webdriver.Chrome(service=service, options=option)
-    scraper.set_window_size(2048, 1080)
+    # # Set up selenium webdriver
+    # CHROMEDRIVER_PATH = '/home/nobin/Documents/chromedriver/chromedriver'
+    # WINDOW_SIZE = "2048,1080"
+    # chrome_service = Service(CHROMEDRIVER_PATH)
+
+    # chrome_options = Options()
+    # chrome_options.add_argument("--headless") 
+    # chrome_options.add_argument("--no-sandbox")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--disable-gpu")
+    # chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
+
+    # scraper = webdriver.Chrome(service=chrome_service, options=chrome_options)
+
     try:
         ads = scrape_google_ads(query)
         if not ads:
+            print("No Ads found")
             return []
         for ad in ads:
             url = ad["url"]
-            print(url)
             try:
                 try:
                     details = facebook_crawler(url)

@@ -1,4 +1,3 @@
-
 import os
 import csv
 import time
@@ -9,7 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-
+from icecream import ic
 
 def is_empty_image(image):
     """
@@ -57,32 +56,39 @@ def scrape_google_ads(query, max_ads=4):
         os.makedirs(f"media/data/{query}/full", exist_ok=True)
 
     # Set up selenium webdriver
-    options = Options()
-    options.add_argument("--headless") 
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    service = Service("path/to/chromedriver")
-    scraper = webdriver.Chrome(service=service, options=options)
-    scraper.set_window_size(2048, 1080)
+    CHROMEDRIVER_PATH = '/home/nobin/Documents/chromedriver/chromedriver'
+    WINDOW_SIZE = "2048,1080"
+    chrome_service = Service(CHROMEDRIVER_PATH)
+
+    chrome_options = Options()
+    chrome_options.add_argument("--headless") 
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
+    scraper = webdriver.Chrome(service=chrome_service, options=chrome_options)
 
     url = f"https://www.google.com/search?q={query}"
-    print(url)
+
+    ic(query)
+    ic(url)
+
     scraper.get(url)
     time.sleep(2)
+
     try:
         # saving full image screenshot
         scraper.save_screenshot(f"media/data/{query}/full/full_page.png")
         initial_ads = scraper.find_elements(By.CSS_SELECTOR, ".uEierd")
+        ic(initial_ads)
 
-        # screenshot_count = 0
         # saving individual ads only 4 items
-        for i, element in enumerate(initial_ads):
-            if i >= max_ads:
+        for loop_index, web_element in enumerate(initial_ads):
+            ic("First loop")
+            if loop_index >= max_ads:
                 break
-
-            location = element.location
-            size = element.size
+            location = web_element.location
+            size = web_element.size
             im = Image.open(f"media/data/{query}/full/full_page.png")
             left = location["x"]
             top = location["y"]
@@ -95,45 +101,56 @@ def scrape_google_ads(query, max_ads=4):
             last_screenshot_count = get_last_screenshot_count(
                 file_paths=os.listdir(f"media/data/{query}/")
             )
+            ic(last_screenshot_count)
             if not is_empty_image(im):
+                ic(im)
                 im.save(f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
                 indexes.append(last_screenshot_count+1)
             
             ads = []
+            ic(ads)
+            ic(indexes)
             while True:
+                ic("second loop")
                 scraper.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
                 time.sleep(3)
                 new_ads = scraper.find_elements(By.CSS_SELECTOR, ".uEierd")
-                if new_ads == ads or len(new_ads) >= max_ads:
+                ic(new_ads)
+                ic(len(new_ads))
+                if new_ads == ads:
                     break
-                else:
+                elif new_ads != ads:
                     ads = new_ads
-                    for i, element in enumerate(ads):
-                        if i >= max_ads:
+                    for loop_index, web_element in enumerate(ads):
+                        if loop_index >= max_ads:
                             break
 
-                        location = element.location
-                        size = element.size
+                        location = web_element.location
+                        size = web_element.size
                         left = location["x"]
                         top = location["y"]
                         right = location["x"] + size["width"]
                         bottom = location["y"] + size["height"]
 
                         im = im.crop((left, top, right, bottom))
+                        ic("last im")
                         if not is_empty_image(im):
                             im.save(f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
                             indexes.append(last_screenshot_count+1)
+                ic(indexes)
+
         try:
             descriptions = scraper.find_elements(By.CSS_SELECTOR, ".MUxGbd.yDYNvb.lyLwlc")
             desc = []
-            for i, description in enumerate(descriptions):
-                if i >= max_ads or i >= len(indexes):
+            for loop_index, description in enumerate(descriptions):
+                if loop_index >= max_ads or loop_index >= len(indexes):
                     break
                 data = description.find_element(By.CSS_SELECTOR, "div").text.strip()
                 desc.append(data)
-        except:
-            return desc.append("No description available")
 
+        except Exception:
+            return desc.append("No description available")
+        ic(desc)
         ad_containers = scraper.find_elements(By.CSS_SELECTOR, ".v5yQqb")
         ads = []
         for i, ad_container in enumerate(ad_containers):
@@ -150,7 +167,10 @@ def scrape_google_ads(query, max_ads=4):
                 "screenshot": f"media/data/{query}/{query}_{indexes[i]}.png"
             }
             ads.append(ad)
+
+        ic(ads)
         return ads
+
     except Exception:
         return []
     
