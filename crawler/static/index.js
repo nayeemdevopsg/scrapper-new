@@ -1,7 +1,7 @@
 $(document).ready(function() {
   // Perform AJAX request to fetch the dynamic data
   $.ajax({
-    url: 'http://localhost:8000/v1/scraper/number_of_ads',
+    url: 'http://3.104.27.245 /v1/scraper/number_of_ads',
     type: 'GET',
     success: function(response) {
       var numberOfAds = response.data;
@@ -17,7 +17,7 @@ $(document).ready(function() {
 $(document).ready(function() {
   // Perform AJAX request to fetch the dynamic data
   $.ajax({
-    url: 'http://localhost:8000/v1/scraper/ad_queries_count',
+    url: 'http://3.104.27.245 /v1/scraper/ad_queries_count',
     type: 'GET',
     success: function(response) {
       var numberOfAds = response.data;
@@ -36,7 +36,7 @@ $(document).ready(function() {
  function fetchData() {
   // Make an AJAX request
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", "http://localhost:8000/v1/scraper", true);
+  xhr.open("GET", "http://3.104.27.245 /v1/scraper", true);
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && xhr.status === 200) {
@@ -129,7 +129,7 @@ data.forEach(function (project) {
   var actionsCell = document.createElement("td");
   actionsCell.className = "project-actions text-right";
   actionsCell.innerHTML = `
-  <a class="btn btn-info btn-sm" href="http://localhost:8000/crawler/${project.ad_id}">
+  <a class="btn btn-info btn-sm" href="http://3.104.27.245 /crawler/${project.ad_id}">
   <i class="fas fa-pencil-alt"></i>
   Edit
 </a>
@@ -177,7 +177,7 @@ function showDeleteConfirmation(adId, row) {
 function deleteAd(adId, row) {
   // Send a DELETE request to the server
   var csrfToken = getCookie("csrftoken");
-  fetch(`http://localhost:8000/v1/crawler/delete_ad/${adId}`, {
+  fetch(`http://3.104.27.245 /v1/crawler/delete_ad/${adId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",

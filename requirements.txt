@@ -33,3 +33,5 @@ django-adminlte-3==0.1.6
 Pillow==9.5.0
 whitenoise
 gunicorn
+icecream==2.1.3
+

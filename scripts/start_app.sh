@@ -1,6 +1,6 @@
 #!/usr/bin/bash 
 
-sed -i 's/\[]/\["localhost:8000"]/' /home/ubuntu/scraperproject/scraper/settings.py
+sed -i 's/\[]/\["3.104.27.245 "]/' /home/ubuntu/scraperproject/scraper/settings.py
 
 python3 manage.py migrate 
 python3 manage.py makemigrations     
