@@ -12,7 +12,7 @@
         <input type="file" id="csvFileInput">
         <button class="button" onclick="sendPostRequest()"><b>Scrape</b></button>
         <button class="button" id="cancelButton" onclick="cancelScraping()" style="display: none;"><b>Cancel</b></button> <!-- Add the Cancel button with "display: none" -->
-        <a href="http://3.104.27.245 /crawler/dashboard"><button class="button right-button"><b>Dashboard</b></button></a>
+        <a href="http://3.104.27.245/crawler/dashboard"><button class="button right-button"><b>Dashboard</b></button></a>
     </div>
 
     <table id="csvTable" style="display: none;">
@@ -109,7 +109,7 @@
         abortController = new AbortController();
         const signal = abortController.signal;
 
-        fetch('http://3.104.27.245 /v1/scraper/csv', {
+        fetch('http://3.104.27.245/v1/scraper/csv', {
             method: 'POST',
             body: formData,
             signal,
