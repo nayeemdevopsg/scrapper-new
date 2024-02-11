@@ -48,12 +48,19 @@ class Ad_modelList(APIView):
             for buzzword in buzzwords if buzzwords.any() else [None]:
                 for location in locations if locations.any() else [None]:
                     queries.append(f'{keyword} {buzzword} {location}')
-        queries = ["ads", "add services"]
 
-        if url_content_scraper(queries):
-            return ResponseHelper.get_success_response (queries,'successfully scraped data')
-        return ResponseHelper.get_internal_server_error_response("Error scraping data:")
-            
+        total_combination_count = len(queries)
+        queries = queries[:min(len(queries), 20)]
+        error_occured, saved_queries_or_error = url_content_scraper(queries)
+
+        if not error_occured:
+            return ResponseHelper.get_success_response ({
+                "total_combinations": total_combination_count,
+                "scrapped_combinations": queries,
+                "saved_queries": saved_queries_or_error,
+            }, "Successfully scrapped and saved those data.")
+        return ResponseHelper.get_internal_server_error_response(saved_queries_or_error)
+
     def get(self, request):
         try:
             ad = Ad_model.objects.all()

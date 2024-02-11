@@ -10,7 +10,6 @@ from django.core.files import File
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from icecream import ic
 
 
 def is_empty_image(image):
@@ -58,7 +57,7 @@ def scrape_google_ads(query, max_ads=4):
         os.makedirs(f"media/data/{query}/full", exist_ok=True)
 
     # Set up selenium webdriver
-    CHROMEDRIVER_PATH = '/usr/local/bin/chromedriver'
+    CHROMEDRIVER_PATH = 'chromedriver-linux64/chromedriver'
     WINDOW_SIZE = "2048,1080"
     chrome_service = Service(CHROMEDRIVER_PATH)
 
@@ -116,12 +115,12 @@ def scrape_google_ads(query, max_ads=4):
             file_paths=os.listdir(f"media/data/{query}/")
         )
         if not is_empty_image(full_image):
-            ic(full_image.info)
             full_image.save(f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
             buffer = io.BytesIO()
             full_image.save(buffer, format='png')  # Maintain original format
             buffered_file = File(buffer, f"{query}_{last_screenshot_count+1}.png")
             scrapped_data[loop_index].update(screenshot=buffered_file)
+            buffered_file.close()
     return scrapped_data
 
 

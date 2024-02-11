@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from crawler.system.adscraper import scrape_google_ads
 from crawler.models import Ad_model
 from crawler.serializer import Ad_modelSerializer
+from icecream import ic
 
 def whois_lookup (url):
     print("started whois lookup crawling...")
@@ -67,14 +68,19 @@ def facebook_crawler(url):
 def url_content_scraper(queries):
     return_value = []
     for query in queries:
+        ic(query)
         data_list: list = scrape_google_ads(query)
         for data in data_list:
             existing_ad = Ad_model.objects.filter(Q(ad_url=data.get('ad_url')) | Q(ad_title=data.get('ad_title')))
             if not existing_ad:
                 return_value.append(data)
-    serializer = Ad_modelSerializer(data=return_value, many=True)
-    if serializer.is_valid():
-        serializer.save()
-        return len(serializer.data)
-    return 0
+    if return_value is not None:
+        key_to_extract = "query"
+        extracted_values = [item[key_to_extract] for item in return_value]
+        serializer = Ad_modelSerializer(data=return_value, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return False, extracted_values
+        return True, serializer.errors
+    return False, []
 
