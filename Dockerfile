@@ -1,24 +1,35 @@
 FROM python:3.9
 
+# Set working directory in the container
 WORKDIR /app
+
+# Copy the current directory contents into the container at /app
 COPY . /app
-RUN pip3 install -r /app/requirements.txt
 
-RUN apt-get -y update
-RUN pip install --upgrade pip
-RUN apt-get install zip -y
-RUN apt-get install unzip -y
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN wget -N https://chromedriver.storage.googleapis.com/114.0.5735.16/chromedriver_linux64.zip -P ~/
-RUN unzip ~/chromedriver_linux64.zip -d ~/
-RUN rm ~/chromedriver_linux64.zip
-RUN mv -f ~/chromedriver /usr/local/bin/chromedriver
-# RUN chown ubuntu:ubuntu /usr/local/bin/chromedriver
-RUN chmod 0755 /usr/local/bin/chromedriver
+# Update package lists and install necessary packages
+RUN apt-get update && \
+  apt-get install -y wget gnupg unzip && \
+  apt-get clean
 
-RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
-RUN apt-get -y update
-RUN apt-get -y install google-chrome-stable
-EXPOSE 8000
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Install Google Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+  echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
+  apt-get update && \
+  apt-get install -y google-chrome-stable && \
+  rm -rf /var/lib/apt/lists/*
+
+# Download and install ChromeDriver
+RUN CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
+  wget -qP /usr/local/bin "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" && \
+  unzip /usr/local/bin/chromedriver_linux64.zip -d /usr/local/bin && \
+  rm /usr/local/bin/chromedriver_linux64.zip && \
+  chmod +x /usr/local/bin/chromedriver
+
+# Expose port 8000 to the outside world
+EXPOSE 8080
+
+# Command to run the application with Gunicorn
+CMD ["gunicorn", "--workers=4", "--bind", "0.0.0.0:8080", "scraper.wsgi:application"]

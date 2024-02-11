@@ -58,7 +58,7 @@ def scrape_google_ads(query, max_ads=4):
         os.makedirs(f"media/data/{query}/full", exist_ok=True)
 
     # Set up selenium webdriver
-    CHROMEDRIVER_PATH = '/home/nobinkhan/Downloads/chromedriver/chromedriver'
+    CHROMEDRIVER_PATH = '/usr/local/bin/chromedriver'
     WINDOW_SIZE = "2048,1080"
     chrome_service = Service(CHROMEDRIVER_PATH)
 
