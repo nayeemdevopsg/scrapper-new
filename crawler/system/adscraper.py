@@ -115,12 +115,11 @@ def scrape_google_ads(query, max_ads=4):
             file_paths=os.listdir(f"media/data/{query}/")
         )
         if not is_empty_image(full_image):
-            full_image.save(f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
+            # full_image.save(f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
             buffer = io.BytesIO()
             full_image.save(buffer, format='png')  # Maintain original format
-            buffered_file = File(buffer, f"{query}_{last_screenshot_count+1}.png")
+            buffered_file = File(buffer, f"media/data/{query}/{query}_{last_screenshot_count+1}.png")
             scrapped_data[loop_index].update(screenshot=buffered_file)
-            buffered_file.close()
     return scrapped_data
 
 
