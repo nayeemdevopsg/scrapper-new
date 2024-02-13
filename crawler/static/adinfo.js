@@ -17,7 +17,7 @@ const getCurrentAdId = () => {
 
 // Function to fetch all ads from the database
 const fetchAdsFromDatabase = () => {
-  return fetch('http://3.104.27.245 /v1/scraper')
+  return fetch('http://3.104.27.245/v1/scraper')
     .then(response => {
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -74,7 +74,7 @@ const navigateToNextRandomAd = async () => {
   const nextIndex = (currentIndex + 1) % shuffledAds.length;
   const nextAdId = shuffledAds[nextIndex];
 
-  const nextAdUrl = `http://3.104.27.245 /crawler/${nextAdId}`;
+  const nextAdUrl = `http://3.104.27.245/crawler/${nextAdId}`;
   window.location.href = nextAdUrl;
 
   // Save the updated previousAds array to session storage
@@ -88,7 +88,7 @@ const navigateToPreviousAd = () => {
 
   if (previousAds.length > 0) {
     const previousAdId = previousAds.pop(); // Get the last stored previous ad ID
-    const previousAdUrl = `http://3.104.27.245 /crawler/${previousAdId}`;
+    const previousAdUrl = `http://3.104.27.245/crawler/${previousAdId}`;
     window.location.href = previousAdUrl;
 
     // Save the updated previousAds array to session storage
@@ -112,7 +112,7 @@ function handleSubmit(event) {
 
   const adId = getCurrentAdId();
   const noteInput = document.getElementById('noteInput').value;
-  const url = `http://3.104.27.245 /v1/crawler/update_ad/${adId}`;
+  const url = `http://3.104.27.245/v1/crawler/update_ad/${adId}`;
   const csrfToken = getCookie('csrfmiddlewaretoken');
 
   // Create a new XMLHttpRequest object

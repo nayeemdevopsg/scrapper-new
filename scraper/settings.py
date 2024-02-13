@@ -136,8 +136,8 @@ MEDIA_URL = '/media/'
 
 
 # CORS_ORIGIN_WHITELIST = [
-#     'http://3.104.27.245 ',
-#     'https://3.104.27.245 ',
+#     'http://3.104.27.245',
+#     'https://3.104.27.245',
 # ]
 
 # # Allow all headers and methods (modify as per your requirements)

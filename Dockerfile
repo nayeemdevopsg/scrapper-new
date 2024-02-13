@@ -1,67 +1,32 @@
-# --------- Base --------
-
-FROM fedora:39 as base
-
-ARG UID
-ARG GID
-ENV APP_USER=nonroot
-COPY google-chrome-stable_current_x86_64.rpm google-chrome-stable_current_x86_64.rpm
-
-RUN set -eux ;\
-    groupadd -g ${GID} ${APP_USER} && \
-    useradd -u ${UID} -g ${GID} -m ${APP_USER} ;\
-    dnf -y --allowerasing --nodocs --setopt install_weak_deps=False upgrade && dnf4 clean all ;\
-    dnf -y --allowerasing --nodocs --setopt install_weak_deps=False autoremove && dnf4 clean all ;\
-    dnf install -y --allowerasing --nodocs python3-pip libpq-devel && dnf4 clean all ;\
-    dnf install -y --allowerasing --nodocs ./google-chrome-stable_current_x86_64.rpm && dnf4 clean all ;\
-    pip install --no-cache --upgrade pip setuptools wheel ;\
-    dnf clean all ;\
-    rm -rf google-chrome-stable_current_x86_64.rpm ;\
-    ln /usr/bin/python3 /usr/bin/python ; \
-    chown -R ${APP_USER}:${APP_USER} /home/${APP_USER} && chmod -R 775 /home/${APP_USER} ;\
-    chown -R ${APP_USER}:${APP_USER} /var/run/ && chmod -R 775 /var/run/ ;
-
-# --------- Base --------
-
-# --------- Build --------
-FROM base as build
-
-RUN set -eux ;\
-    pip install --no-cache --upgrade pip setuptools wheel ;
-
-USER ${APP_USER}
-WORKDIR /home/${APP_USER}
-COPY requirements.txt /home/${APP_USER}/requirements.txt
-
-# install dependency
-RUN set -eux ;\
-    python -m venv venv ;\
-    source venv/bin/activate && \
-    pip install --no-cache --upgrade pip setuptools wheel ;\
-    pip wheel --no-cache -r requirements.txt -w wheelhouse ;
-
-# --------- Build --------
-
-# --------- Final --------
-
-FROM base as final
-
-EXPOSE 8000
-USER ${APP_USER}
-WORKDIR /home/${APP_USER}
-COPY --chown=${UID}:${GID} --chmod=775 temp_copy /home/${APP_USER}/project/
-
-# Copy wheel files from the build stage
-COPY --from=build --chown=${UID}:${GID} --chmod=775 /home/${APP_USER}/wheelhouse /home/${APP_USER}/wheelhouse
-
-# Install dependency
-RUN set -eux ;\
-    pip install --no-cache --no-index --no-warn-script-location --find-links=/home/${APP_USER}/wheelhouse -r /home/${APP_USER}/project/requirements.txt ;\
-    rm -rf wheelhouse ;
-
-# Fix dramatiq executable not found error
+FROM python:3.9
 
 
-ENTRYPOINT ["./project/entrypoint.sh"]
+WORKDIR /app
 
-# --------- Final --------
+
+COPY . /app
+
+
+RUN pip install -r requirements.txt
+
+RUN apt-get update && \
+    apt-get install -y wget gnupg unzip && \
+    apt-get clean
+
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
+
+
+RUN apt-get update -y
+RUN apt-get install -y google-chrome-stable
+
+
+RUN wget -qP /usr/local/bin "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/121.0.6167.85/linux64/chromedriver-linux64.zip" && \
+    unzip /usr/local/bin/chromedriver-linux64.zip -d /usr/local/bin && \
+    rm /usr/local/bin/chromedriver-linux64.zip && \
+    mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/ && \
+    chmod +x /usr/local/bin/chromedriver
+
+EXPOSE 80
+
+ENTRYPOINT ["gunicorn", "--workers=4","--timeout", "3600", "--bind", "0.0.0.0:80", "scraper.wsgi:application"]

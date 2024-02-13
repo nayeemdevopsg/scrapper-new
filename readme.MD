@@ -10,11 +10,11 @@ This application is a Django project which is a ad scraper.
 5. Run the server. `python manage.py runserver`
 
 ## Usage
-1. Go to the home page. `http://3.104.27.245 /:8000`
+1. Go to the home page. `http://3.104.27.245/:8000`
 2. Enter the query of the ads you want to scrape.
 3. Click the button to scrape the website.
 4. The progress will be shown on the page.
-5. After the scraping is done, the result will be shown on the page `http://3.104.27.245 /:8000crawler/ads`.
+5. After the scraping is done, the result will be shown on the page `http://3.104.27.245/:8000crawler/ads`.
 
 ## project structure
 ```
